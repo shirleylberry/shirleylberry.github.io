@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[A Clever Title]]></title>
+  <link href="http://shirleylberry.github.io/atom.xml" rel="self"/>
+  <link href="http://shirleylberry.github.io/"/>
+  <updated>2016-02-11T09:20:51-05:00</updated>
+  <id>http://shirleylberry.github.io/</id>
+  <author>
+    <name><![CDATA[Shirley Berry]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[First Octopress Post]]></title>
+    <link href="http://shirleylberry.github.io/blog/2016/02/11/first-octopress-post/"/>
+    <updated>2016-02-11T09:18:25-05:00</updated>
+    <id>http://shirleylberry.github.io/blog/2016/02/11/first-octopress-post</id>
+    <content type="html"><![CDATA[<p>&ldquo;Hello blog.&rdquo;</p>
+]]></content>
+  </entry>
+  
+</feed>
