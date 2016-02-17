@@ -7,3 +7,8 @@ categories: "Flatiron School"
 ---
 
 "Hello blog."
+
+```
+def Person
+end
+```

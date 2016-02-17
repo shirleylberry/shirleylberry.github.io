@@ -3,8 +3,8 @@
 # ----------------------- #
 
 url: http://shirleylberry.github.io
-title: A Clever Title
-subtitle: An even cleverer subtitle.
+title: Codename Berry
+subtitle: clever_subtitle.nil? = True
 author: Shirley Berry
 simple_search: https://www.google.com/search
 description:
@@ -64,7 +64,7 @@ default_asides: [asides/recent_posts.html, asides/github.html, asides/delicious.
 # ----------------------- #
 
 # Github repositories
-github_user:
+github_user: shirleylberry
 github_repo_count: 0
 github_show_profile_link: true
 github_skip_forks: true
