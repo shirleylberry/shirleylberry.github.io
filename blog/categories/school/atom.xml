@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: School | A Clever Title]]></title>
+  <title><![CDATA[Category: School | Codename Berry]]></title>
   <link href="http://shirleylberry.github.io/blog/categories/school/atom.xml" rel="self"/>
   <link href="http://shirleylberry.github.io/"/>
-  <updated>2016-02-11T09:20:51-05:00</updated>
+  <updated>2016-02-17T00:40:37-05:00</updated>
   <id>http://shirleylberry.github.io/</id>
   <author>
     <name><![CDATA[Shirley Berry]]></name>
@@ -14,11 +14,155 @@
 
   
   <entry>
+    <title type="html"><![CDATA[Evaluating Binding in ERB]]></title>
+    <link href="http://shirleylberry.github.io/blog/2016/02/16/evaluating-binding-in-erb/"/>
+    <updated>2016-02-16T21:12:42-05:00</updated>
+    <id>http://shirleylberry.github.io/blog/2016/02/16/evaluating-binding-in-erb</id>
+    <content type="html"><![CDATA[<p>For this blog post, I first set out to understand the use of <strong>binding</strong> in ERB (specifically in the <code>result</code> method). Central to that turned out to be a method called <code>eval</code>, and this post will mostly discuss the interaction between <code>eval</code> and binding, especially in the context of ERB.</p>
+
+<p>ERB, which stands for Embedded RuBy, is a way to embed ruby code and logic in HTML templates. At one key step in creating our template, we call a method called <code>result(binding)</code>. It does some <em>shenanigans</em> and gives us back exactly what we want.</p>
+
+<p><img src="http://i.giphy.com/UNeHvSzLsXwE8.gif" alt="shenanigans" /></p>
+
+<p>The main topic of this blog is those shenanigans, but first let&rsquo;s go over ERB.</p>
+
+<h1>ERB</h1>
+
+<p>Let&rsquo;s say we have a file called <code>add_movie.html.erb</code> that contains the following:</p>
+
+<p>``` HTML</p>
+
+<p>"Added #{movie_name} to your collection."</p>
+
+
+<pre><code>
+We want to take that template, and insert something useful instead of `#{movie_name}`. First, we need to create a string. Why do we need to create a string? Because that's what ERB.new takes as a parameter. Let's go ahead and create our ERB object.
+</code></pre>
+
+<p>def render(file)
+  file_name = &ldquo;views/templates/#{file}.html.erb&rdquo;
+  file_contents = File.read(file_name) # first we create a string
+  template = ERB.new(file_contents) # then we create a new ERB object using that string
+  binding.pry
+  # &hellip; continued below
+```</p>
+
+<p>Since we&rsquo;ve hit a <code>binding.pry</code>, let&rsquo;s take a look at what we&rsquo;ve created so far in this method.</p>
+
+<p><img src="http://i.imgur.com/E8iuTRr.png" alt="Looking at template with binding.pry" /></p>
+
+<p>Most of this will look the same every time you create a new ERB object, except for <code>@src</code>, which we&rsquo;ll be looking at in a minute. It&rsquo;s part of the magic. Let&rsquo;s keep going.</p>
+
+<pre><code class="Ruby">  formatted_file_contents = template.result(binding) # shenanigans
+  output_file = "views/output/#{file}.html"
+  new_file = File.write(output_file, formatted_file_contents)
+  `open -a 'Google Chrome' #{output_file}`
+end
+</code></pre>
+
+<p>We call the <code>result</code> method on our ERB object, and pass in <strong>binding</strong>. We know that we need to pass in binding so that our template will know what the variable #{movie_name} should be, but not exactly how binding helps. Then ERB does some magic somehow and puts out a string that has had its ruby code magically evaluated.</p>
+
+<p><img src="http://i.imgur.com/XxdoZQG.png" alt="The value of formatted_file_contents" /></p>
+
+<p><img src="http://i.imgur.com/YsbKHg1.gif" alt="Shia tells it like it is" /></p>
+
+<h1>The Source</h1>
+
+<p>To figure out what <code>result(binding)</code> is doing, let&rsquo;s go to the source (code).</p>
+
+<pre><code class="Ruby">               # File erb.rb, line 831
+def result(b=TOPLEVEL_BINDING)
+  if @safe_level
+    proc {
+      $SAFE = @safe_level
+      eval(@src, b, (@filename || '(erb)'), 0) # &lt;- Right here
+    }.call
+  else
+    eval(@src, b, (@filename || '(erb)'), 0) # &lt;- here too
+  end
+end
+</code></pre>
+
+<p>There&rsquo;s a lot here, but if we strip it down, it&rsquo;s really only running one command: <code>eval()</code>. What is <code>eval()</code>?</p>
+
+<h1>Eval and Binding</h1>
+
+<p><code>eval()</code> is a method that takes in a string and evaluates that string as ruby code.</p>
+
+<pre><code class="Ruby">eval("7 * 5") # this will return 35
+</code></pre>
+
+<p><em>Note of warning: Do not use <code>eval()</code> without adult supervision. It is dangerous.</em></p>
+
+<p>The cool thing about <code>eval()</code> is that you can pass in an optional parameter to it: <strong>binding</strong>.</p>
+
+<p>The Ruby docs define <strong>binding</strong> as follows: &ldquo;Objects of class Binding encapsulate the execution context at some particular place in the code and retain this context for future use.&rdquo; Or as <a href="https://codequizzes.wordpress.com%0A/2014/05/18/rubys-binding-class-binding-objects/">this blog</a> put it, &ldquo;A Binding is a whole scope packaged as an object. The idea is that you can create a Binding to capture the local scope and carry it around.&rdquo;</p>
+
+<p>So, binding is like a portable scope, and the main place it appears is in <code>eval()</code>. The binding parameter will define the scope in which the code you&rsquo;ve passed in is executed.</p>
+
+<pre><code class="Ruby">def a_totally_different_scope
+  str = "Goodbye"
+  binding
+end
+
+str = "Hello" 
+# here, we don't pass in a scope, so it defaults to the current scope
+puts eval("str + ' Jeff'")                             #=&gt; "Hello Jeff"
+
+# here, we pass in a scope, so we'll go to that totally_different_scope to
+# figure out what str equals
+puts eval("str + ' Jeff'", a_totally_different_scope)  #=&gt; "Goodbye Jeff"
+</code></pre>
+
+<p>Let&rsquo;s keep looking at the source code for <code>result()</code>.</p>
+
+<pre><code class="Ruby">               # File erb.rb, line 831
+def result(b=TOPLEVEL_BINDING)
+  if @safe_level
+    proc {
+      $SAFE = @safe_level
+      eval(@src, b, (@filename || '(erb)'), 0) # &lt;- Right here
+    }.call
+  else
+    eval(@src, b, (@filename || '(erb)'), 0) # &lt;- here too
+  end
+end
+</code></pre>
+
+<p>We&rsquo;ve figured out what b is, but what is that <code>@src</code> parameter? It&rsquo;s an instance variable, so we know it must belong to the object calling <code>result()</code>, which is template. Let&rsquo;s look at template again.</p>
+
+<p><img src="http://i.imgur.com/E8iuTRr.png" alt="Looking at template with binding.pry" /></p>
+
+<p>Taking a closer look at <code>@src</code>, it looks a lot like ruby. In Ruby, the semicolon <code>;</code> lets you put more than one command on a single line, so let&rsquo;s split <code>@src</code> up into separate lines.</p>
+
+<pre><code>"#coding:UTF-8\n
+_erbout = ''
+_erbout.concat \"&lt;p&gt; \"
+_erbout.concat(( \"Added \#{@movie_name} to your collection.\" ).to_s)
+_erbout.concat \" &lt;/p&gt;\"
+_erbout.force_encoding(__ENCODING__)"
+</code></pre>
+
+<p>That looks exactly like ruby, just inside of a string. Exactly what we need for <code>eval</code>.</p>
+
+<p>When you call <code>template.result(binding)</code> it runs <code>eval()</code> on the <code>@str</code> instance variable of template. It evaluates that string as ruby code, in the scope of whatever binding was passed in. It creates an empty string _erbout, and then builds back up the string we passed in to ERB.new, without the <code>&lt;% %&gt;</code> tags and calling <code>.to_s</code> on the code grouped in those tags.</p>
+
+<p>It then passes the result back out as a string which we can then use to create an HTML template.</p>
+
+<p>When it comes down to it, ERB is still magic, but we can at least be in on the trick.</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[First Octopress Post]]></title>
     <link href="http://shirleylberry.github.io/blog/2016/02/11/first-octopress-post/"/>
     <updated>2016-02-11T09:18:25-05:00</updated>
     <id>http://shirleylberry.github.io/blog/2016/02/11/first-octopress-post</id>
     <content type="html"><![CDATA[<p>&ldquo;Hello blog.&rdquo;</p>
+
+<pre><code>def Person
+end
+</code></pre>
 ]]></content>
   </entry>
   

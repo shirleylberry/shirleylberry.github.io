@@ -5,12 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>A Clever Title</title>
+  <title>Codename Berry</title>
   <meta name="author" content="Shirley Berry">
 
   
-  <meta name="description" content="&ldquo;Hello blog.&rdquo;
-">
+  <meta name="description" content="For this blog post, I first set out to understand the use of binding in ERB (specifically in the result method). Central to that turned out to be a &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -22,7 +21,7 @@
   <link rel="canonical" href="http://shirleylberry.github.io/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="A Clever Title" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Codename Berry" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -37,9 +36,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">A Clever Title</a></h1>
+  <h1><a href="/">Codename Berry</a></h1>
   
-    <h2>An even cleverer subtitle.</h2>
+    <h2>clever_subtitle.nil? = True</h2>
   
 </hgroup>
 
@@ -72,6 +71,223 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2016/02/16/evaluating-binding-in-erb/">Evaluating Binding in ERB</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-02-16T21:12:42-05:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:12 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>For this blog post, I first set out to understand the use of <strong>binding</strong> in ERB (specifically in the <code>result</code> method). Central to that turned out to be a method called <code>eval</code>, and this post will mostly discuss the interaction between <code>eval</code> and binding, especially in the context of ERB.</p>
+
+<p>ERB, which stands for Embedded RuBy, is a way to embed ruby code and logic in HTML templates. At one key step in creating our template, we call a method called <code>result(binding)</code>. It does some <em>shenanigans</em> and gives us back exactly what we want.</p>
+
+<p><img src="http://i.giphy.com/UNeHvSzLsXwE8.gif" alt="shenanigans" /></p>
+
+<p>The main topic of this blog is those shenanigans, but first let&rsquo;s go over ERB.</p>
+
+<h1>ERB</h1>
+
+<p>Let&rsquo;s say we have a file called <code>add_movie.html.erb</code> that contains the following:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='HTML'><span class='line'><span class="nt">&lt;p&gt;</span>&quot;Added #{movie_name} to your collection.&quot;<span class="nt">&lt;/p&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We want to take that template, and insert something useful instead of <code>#{movie_name}</code>. First, we need to create a string. Why do we need to create a string? Because that&rsquo;s what ERB.new takes as a parameter. Let&rsquo;s go ahead and create our ERB object.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;views/templates/</span><span class="si">#{</span><span class="n">file</span><span class="si">}</span><span class="s2">.html.erb&quot;</span>
+</span><span class='line'>  <span class="n">file_contents</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span> <span class="c1"># first we create a string</span>
+</span><span class='line'>  <span class="n">template</span> <span class="o">=</span> <span class="no">ERB</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">file_contents</span><span class="p">)</span> <span class="c1"># then we create a new ERB object using that string</span>
+</span><span class='line'>  <span class="nb">binding</span><span class="o">.</span><span class="n">pry</span>
+</span><span class='line'>  <span class="c1"># ... continued below</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Since we&rsquo;ve hit a <code>binding.pry</code>, let&rsquo;s take a look at what we&rsquo;ve created so far in this method.</p>
+
+<p><img src="http://i.imgur.com/E8iuTRr.png" alt="Looking at template with binding.pry" /></p>
+
+<p>Most of this will look the same every time you create a new ERB object, except for <code>@src</code>, which we&rsquo;ll be looking at in a minute. It&rsquo;s part of the magic. Let&rsquo;s keep going.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'>  <span class="n">formatted_file_contents</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">result</span><span class="p">(</span><span class="nb">binding</span><span class="p">)</span> <span class="c1"># shenanigans</span>
+</span><span class='line'>  <span class="n">output_file</span> <span class="o">=</span> <span class="s2">&quot;views/output/</span><span class="si">#{</span><span class="n">file</span><span class="si">}</span><span class="s2">.html&quot;</span>
+</span><span class='line'>  <span class="n">new_file</span> <span class="o">=</span> <span class="no">File</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">formatted_file_contents</span><span class="p">)</span>
+</span><span class='line'>  <span class="sb">`open -a &#39;Google Chrome&#39; </span><span class="si">#{</span><span class="n">output_file</span><span class="si">}</span><span class="sb">`</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We call the <code>result</code> method on our ERB object, and pass in <strong>binding</strong>. We know that we need to pass in binding so that our template will know what the variable #{movie_name} should be, but not exactly how binding helps. Then ERB does some magic somehow and puts out a string that has had its ruby code magically evaluated.</p>
+
+<p><img src="http://i.imgur.com/XxdoZQG.png" alt="The value of formatted_file_contents" /></p>
+
+<p><img src="http://i.imgur.com/YsbKHg1.gif" alt="Shia tells it like it is" /></p>
+
+<h1>The Source</h1>
+
+<p>To figure out what <code>result(binding)</code> is doing, let&rsquo;s go to the source (code).</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'>           <span class="c1"># File erb.rb, line 831</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="no">TOPLEVEL_BINDING</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">if</span> <span class="vi">@safe_level</span>
+</span><span class='line'><span class="nb">proc</span> <span class="p">{</span>
+</span><span class='line'>  <span class="vg">$SAFE</span> <span class="o">=</span> <span class="vi">@safe_level</span>
+</span><span class='line'>  <span class="nb">eval</span><span class="p">(</span><span class="vi">@src</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="vi">@filename</span> <span class="o">||</span> <span class="s1">&#39;(erb)&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># &lt;- Right here</span>
+</span><span class='line'><span class="p">}</span><span class="o">.</span><span class="n">call</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'><span class="nb">eval</span><span class="p">(</span><span class="vi">@src</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="vi">@filename</span> <span class="o">||</span> <span class="s1">&#39;(erb)&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># &lt;- here too</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>There&rsquo;s a lot here, but if we strip it down, it&rsquo;s really only running one command: <code>eval()</code>. What is <code>eval()</code>?</p>
+
+<h1>Eval and Binding</h1>
+
+<p><code>eval()</code> is a method that takes in a string and evaluates that string as ruby code.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="nb">eval</span><span class="p">(</span><span class="s2">&quot;7 * 5&quot;</span><span class="p">)</span> <span class="c1"># this will return 35</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>Note of warning: Do not use <code>eval()</code> without adult supervision. It is dangerous.</em></p>
+
+<p>The cool thing about <code>eval()</code> is that you can pass in an optional parameter to it: <strong>binding</strong>.</p>
+
+<p>The Ruby docs define <strong>binding</strong> as follows: &ldquo;Objects of class Binding encapsulate the execution context at some particular place in the code and retain this context for future use.&rdquo; Or as <a href="https://codequizzes.wordpress.com%0A/2014/05/18/rubys-binding-class-binding-objects/">this blog</a> put it, &ldquo;A Binding is a whole scope packaged as an object. The idea is that you can create a Binding to capture the local scope and carry it around.&rdquo;</p>
+
+<p>So, binding is like a portable scope, and the main place it appears is in <code>eval()</code>. The binding parameter will define the scope in which the code you&rsquo;ve passed in is executed.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="k">def</span> <span class="nf">a_totally_different_scope</span>
+</span><span class='line'>  <span class="n">str</span> <span class="o">=</span> <span class="s2">&quot;Goodbye&quot;</span>
+</span><span class='line'>  <span class="nb">binding</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">str</span> <span class="o">=</span> <span class="s2">&quot;Hello&quot;</span>
+</span><span class='line'><span class="c1"># here, we don&#39;t pass in a scope, so it defaults to the current scope</span>
+</span><span class='line'><span class="nb">puts</span> <span class="nb">eval</span><span class="p">(</span><span class="s2">&quot;str + &#39; Jeff&#39;&quot;</span><span class="p">)</span>                             <span class="c1">#=&gt; &quot;Hello Jeff&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># here, we pass in a scope, so we&#39;ll go to that totally_different_scope to</span>
+</span><span class='line'><span class="c1"># figure out what str equals</span>
+</span><span class='line'><span class="nb">puts</span> <span class="nb">eval</span><span class="p">(</span><span class="s2">&quot;str + &#39; Jeff&#39;&quot;</span><span class="p">,</span> <span class="n">a_totally_different_scope</span><span class="p">)</span>  <span class="c1">#=&gt; &quot;Goodbye Jeff&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Let&rsquo;s keep looking at the source code for <code>result()</code>.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'>           <span class="c1"># File erb.rb, line 831</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="n">b</span><span class="o">=</span><span class="no">TOPLEVEL_BINDING</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">if</span> <span class="vi">@safe_level</span>
+</span><span class='line'><span class="nb">proc</span> <span class="p">{</span>
+</span><span class='line'>  <span class="vg">$SAFE</span> <span class="o">=</span> <span class="vi">@safe_level</span>
+</span><span class='line'>  <span class="nb">eval</span><span class="p">(</span><span class="vi">@src</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="vi">@filename</span> <span class="o">||</span> <span class="s1">&#39;(erb)&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># &lt;- Right here</span>
+</span><span class='line'><span class="p">}</span><span class="o">.</span><span class="n">call</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'><span class="nb">eval</span><span class="p">(</span><span class="vi">@src</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="vi">@filename</span> <span class="o">||</span> <span class="s1">&#39;(erb)&#39;</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># &lt;- here too</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We&rsquo;ve figured out what b is, but what is that <code>@src</code> parameter? It&rsquo;s an instance variable, so we know it must belong to the object calling <code>result()</code>, which is template. Let&rsquo;s look at template again.</p>
+
+<p><img src="http://i.imgur.com/E8iuTRr.png" alt="Looking at template with binding.pry" /></p>
+
+<p>Taking a closer look at <code>@src</code>, it looks a lot like ruby. In Ruby, the semicolon <code>;</code> lets you put more than one command on a single line, so let&rsquo;s split <code>@src</code> up into separate lines.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="s2">&quot;#coding:UTF-8</span><span class="se">\n</span><span class="s2"></span>
+</span><span class='line'><span class="s2">_erbout = &#39;&#39;</span>
+</span><span class='line'><span class="s2">_erbout.concat </span><span class="se">\&quot;</span><span class="s2">&lt;p&gt; </span><span class="se">\&quot;</span><span class="s2"></span>
+</span><span class='line'><span class="s2">_erbout.concat(( </span><span class="se">\&quot;</span><span class="s2">Added </span><span class="se">\#</span><span class="s2">{@movie_name} to your collection.</span><span class="se">\&quot;</span><span class="s2"> ).to_s)</span>
+</span><span class='line'><span class="s2">_erbout.concat </span><span class="se">\&quot;</span><span class="s2"> &lt;/p&gt;</span><span class="se">\&quot;</span><span class="s2"></span>
+</span><span class='line'><span class="s2">_erbout.force_encoding(__ENCODING__)&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>That looks exactly like ruby, just inside of a string. Exactly what we need for <code>eval</code>.</p>
+
+<p>When you call <code>template.result(binding)</code> it runs <code>eval()</code> on the <code>@str</code> instance variable of template. It evaluates that string as ruby code, in the scope of whatever binding was passed in. It creates an empty string _erbout, and then builds back up the string we passed in to ERB.new, without the <code>&lt;% %&gt;</code> tags and calling <code>.to_s</code> on the code grouped in those tags.</p>
+
+<p>It then passes the result back out as a string which we can then use to create an HTML template.</p>
+
+<p>When it comes down to it, ERB is still magic, but we can at least be in on the trick.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2016/02/11/first-octopress-post/">First Octopress Post</a></h1>
     
     
@@ -89,6 +305,12 @@
 
 
   <div class="entry-content"><p>&ldquo;Hello blog.&rdquo;</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>def Person
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
+
 </div>
   
   
@@ -109,10 +331,43 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/02/16/evaluating-binding-in-erb/">Evaluating Binding in ERB</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/02/11/first-octopress-post/">First Octopress Post</a>
       </li>
     
   </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/shirleylberry">@shirleylberry</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'shirleylberry',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
 

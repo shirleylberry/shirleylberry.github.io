@@ -5,12 +5,14 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>First Octopress Post - A Clever Title</title>
+  <title>First Octopress Post - Codename Berry</title>
   <meta name="author" content="Shirley Berry">
 
   
-  <meta name="description" content="&ldquo;Hello blog.&rdquo;
-">
+  <meta name="description" content="&ldquo;Hello blog.&rdquo; 1
+2
+def Person
+end ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -22,7 +24,7 @@
   <link rel="canonical" href="http://shirleylberry.github.io/blog/2016/02/11/first-octopress-post/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="A Clever Title" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="Codename Berry" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -37,9 +39,9 @@
 
 <body   >
   <header role="banner"><hgroup>
-  <h1><a href="/">A Clever Title</a></h1>
+  <h1><a href="/">Codename Berry</a></h1>
   
-    <h2>An even cleverer subtitle.</h2>
+    <h2>clever_subtitle.nil? = True</h2>
   
 </hgroup>
 
@@ -86,6 +88,12 @@
 
 
 <div class="entry-content"><p>&ldquo;Hello blog.&rdquo;</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>def Person
+</span><span class='line'>end</span></code></pre></td></tr></table></div></figure>
+
 </div>
 
 
@@ -125,6 +133,8 @@
     <p class="meta">
       
       
+        <a class="basic-alignment right" href="/blog/2016/02/16/evaluating-binding-in-erb/" title="Next Post: Evaluating Binding in ERB">Evaluating Binding in ERB &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -138,10 +148,43 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/02/16/evaluating-binding-in-erb/">Evaluating Binding in ERB</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/02/11/first-octopress-post/">First Octopress Post</a>
       </li>
     
   </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/shirleylberry">@shirleylberry</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'shirleylberry',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
 
