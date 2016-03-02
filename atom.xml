@@ -4,7 +4,7 @@
   <title><![CDATA[Codename Berry]]></title>
   <link href="http://shirleylberry.github.io/atom.xml" rel="self"/>
   <link href="http://shirleylberry.github.io/"/>
-  <updated>2016-03-02T09:05:26-05:00</updated>
+  <updated>2016-03-02T09:39:21-05:00</updated>
   <id>http://shirleylberry.github.io/</id>
   <author>
     <name><![CDATA[Shirley Berry]]></name>
@@ -18,9 +18,15 @@
     <link href="http://shirleylberry.github.io/blog/2016/03/01/collection-classes-in-active-record/"/>
     <updated>2016-03-01T22:57:42-05:00</updated>
     <id>http://shirleylberry.github.io/blog/2016/03/01/collection-classes-in-active-record</id>
-    <content type="html"><![CDATA[<p>Reflection lets us look at our objects, and get more information about how they relate to other objects. We&rsquo;ll be looking at three in this blog post: <code>reflect_on_all_associations</code>, <code>reflect_on_association</code>, and <code>reflections</code>.</p>
+    <content type="html"><![CDATA[<p><img src="http://i.giphy.com/wfETXXGtH2lDW.gif" alt="Reflection" /></p>
 
-<p>For our examples, let&rsquo;s assume we have a class called Creator and another called Game. A game belongs_to a creator, and a creator has_many games. We&rsquo;ll also say that a creator has_many players through games.</p>
+<p>Reflection lets us look at our objects, and get more information about how they relate to other objects. We&rsquo;ll be looking at three methods that let us access these reflection objects in this blog post: <code>reflect_on_all_associations</code>, <code>reflect_on_association</code>, and <code>reflections</code>.</p>
+
+<p>When Active Record creates a new association via the :belongs_to or :has_many keywords, it also creates a Reflection object, in our examples a BelongsToReflection or HasManyReflection, that delegates methods based on the association type.</p>
+
+<p>This ability to inspect our relationships can be useful if you&rsquo;re just in your code and want to explore more about your models relationships, or if you&rsquo;re building, say, a form for a model and want to add fields for every class that the model has a belongs-to relationship with.</p>
+
+<p>For our examples, let&rsquo;s assume we have a Creator class, a Player class, a Game class, and a PlayerGames class to join our games and players tables.. A game belongs_to a creator, and a creator has_many games. We&rsquo;ll also say that a creator has_many players through games.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -40,6 +46,12 @@
 <span class='line-number'>16</span>
 <span class='line-number'>17</span>
 <span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
 </pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="c1"># models/game.rb</span>
 </span><span class='line'><span class="k">class</span> <span class="nc">Game</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
 </span><span class='line'>  <span class="n">has_many</span> <span class="ss">:player_games</span>
@@ -58,6 +70,12 @@
 </span><span class='line'>  <span class="n">has_many</span> <span class="ss">:games</span>
 </span><span class='line'>  <span class="n">has_many</span> <span class="ss">:players</span><span class="p">,</span> <span class="ss">through</span><span class="p">:</span> <span class="ss">:games</span>
 </span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># models/player_games.rb</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">PlayerGames</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:game</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:player</span>
+</span><span class='line'><span class="k">end</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -69,7 +87,7 @@
 
 <p><img src="http://i.imgur.com/sT2iZQz.png" alt="Looking at games associations" /></p>
 
-<p>It&rsquo;s long, and a bit hard to read. Luckily, <code>reflect_on_all_associations</code> lets us pass in a parameter to specify what macro, or type of associations, we want to look at. Let&rsquo;s try that again, this time looking only at what Games belongs to:</p>
+<p>It&rsquo;s long, and a bit hard to read. Luckily, <code>reflect_on_all_associations</code> lets us pass in a parameter to specify what macro, or type of associations, we want to look at. Let&rsquo;s try that again, this time looking only at what Games has_many of:</p>
 
 <p><img src="http://i.imgur.com/tszJUoc.png" alt="Looking at games has_many associations" /></p>
 
@@ -78,11 +96,13 @@
 <p>Let&rsquo;s look at all the classes that games has a has_many relationship with:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="no">Game</span><span class="o">.</span><span class="n">reflect_on_all_associations</span><span class="p">(</span><span class="ss">:has_many</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">relation</span><span class="o">|</span> <span class="n">relation</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="no">Game</span><span class="o">.</span><span class="n">reflect_on_all_associations</span><span class="p">(</span><span class="ss">:has_many</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">relation</span><span class="o">|</span> <span class="n">relation</span><span class="o">.</span><span class="n">klass</span><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>This will output <code>players</code> and <code>player_games</code>.</p>
+<p>This will output</p>
+
+<p><img src="http://i.imgur.com/amA05kK.png" alt="Games has_many classes" /></p>
 
 <h1>reflect_on_association</h1>
 
@@ -102,13 +122,15 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>The above will return [&ldquo;player_games&rdquo;, &ldquo;games&rdquo;], an array of all the table names that the Player model is associated with.</p>
+<p>The above will return [&ldquo;player_games&rdquo;, &ldquo;games&rdquo;], an array of all the table names that the Player model is associated with. Because <code>reflections</code> also returns aggreations, we won&rsquo;t often use this as often as <code>reflect_on_all_associations</code>, which returns a more specific grouping of relationships.</p>
 
 <h1>Why is this Useful?</h1>
 
 <p>If you&rsquo;re creating your own models and structuring the database yourself, you probably won&rsquo;t find yourself needing these methods very often. But if you&rsquo;re working with an unfamiliar database, and trying to get a better idea of how all the models fit together, reflecting on the associations can be a useful tool.</p>
 
-<p>Something I&rsquo;ve been wondering about, also, is whether there&rsquo;s a way to create forms more generically. Usually, we want a form that will render an input field for each of the model&rsquo;s attributes, with only a few variations.</p>
+<p>The <code>.klass</code> attribute of the Reflection objects also allows us to access the class of the target object of the association, which means we have access to those class methods, as well as the ability to create new instances of that class, and associate them with the object we&rsquo;re working with.</p>
+
+<p>Something I&rsquo;ve been consider is whether there&rsquo;s a way to create forms more generically. Usually, we want a form that will render an input field for each of the model&rsquo;s attributes, adding some customization depending on what kind of attribute it is.</p>
 
 <p>As I was looking through the <a href="http://api.rubyonrails.org/classes/ActiveRecord/Reflection/ClassMethods.html">docs for reflection</a>, I found this note about reflections:
 &ldquo;This information can, for example, be used in a form builder that takes an Active Record object and creates input fields for all of the attributes depending on their type and displays the associations to other objects.&rdquo;</p>
@@ -131,8 +153,8 @@
 </span><span class='line'>    <span class="err">&lt;</span>% if association.macro == :belongs_to %&gt;
 </span><span class='line'>      <span class="nt">&lt;p&gt;</span><span class="err">&lt;</span>%= association.name %&gt;:<span class="nt">&lt;input</span> <span class="na">type =</span><span class="err"> </span><span class="s">&quot;text&quot;</span> <span class="na">name =</span><span class="err"> </span><span class="s">&quot;&lt;%=association.name%&gt;&quot;</span><span class="nt">&gt;&lt;/p&gt;</span>
 </span><span class='line'>    <span class="err">&lt;</span>% elsif association.macro == :has_many %&gt;
-</span><span class='line'>      <span class="err">&lt;</span>% 5.times do |i|%&gt;
-</span><span class='line'>        <span class="nt">&lt;p&gt;</span><span class="err">&lt;</span>%= association.name %&gt;:<span class="nt">&lt;input</span> <span class="na">type =</span><span class="err"> </span><span class="s">&quot;text&quot;</span> <span class="na">name =</span><span class="err"> </span><span class="s">&quot;&lt;%=association.name%&gt;&quot;</span><span class="nt">&gt;&lt;/p&gt;</span>
+</span><span class='line'>      <span class="err">&lt;</span>% association.klass.all.each do |instance| %&gt;
+</span><span class='line'>        <span class="nt">&lt;p&gt;</span><span class="err">&lt;</span>%= instance.class %&gt;:<span class="nt">&lt;input</span> <span class="na">type =</span><span class="err"> </span><span class="s">&quot;checkbox&quot;</span> <span class="na">name =</span><span class="err"> </span><span class="s">&quot;&lt;%=instance%&gt;&quot;</span><span class="nt">&gt;&lt;/p&gt;</span>
 </span><span class='line'>      <span class="err">&lt;</span>% end %&gt;
 </span><span class='line'>    <span class="err">&lt;</span>% end %&gt;
 </span><span class='line'>  <span class="err">&lt;</span>% end %&gt;
@@ -141,6 +163,8 @@
 
 
 <p>This is a very simple (and not very useful) example of something that could be very powerful and adaptable.</p>
+
+<p>Another use case I saw online was for auto-generating seed files. Once you know what associations an object has, the attributes that associated object has, and the class methods of the associated object, it&rsquo;s easy to generate a series of loops that will simply generate these objects and link them up for you.</p>
 ]]></content>
   </entry>
   
