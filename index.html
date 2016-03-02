@@ -9,7 +9,7 @@
   <meta name="author" content="Shirley Berry">
 
   
-  <meta name="description" content="For this blog post, I first set out to understand the use of binding in ERB (specifically in the result method). Central to that turned out to be a &hellip;">
+  <meta name="description" content="Reflection lets us look at our objects, and get more information about how they relate to other objects. We&rsquo;ll be looking at three in this blog &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,157 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/01/collection-classes-in-active-record/">Reflecting on Active Record</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-01T22:57:42-05:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>10:57 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Reflection lets us look at our objects, and get more information about how they relate to other objects. We&rsquo;ll be looking at three in this blog post: <code>reflect_on_all_associations</code>, <code>reflect_on_association</code>, and <code>reflections</code>.</p>
+
+<p>For our examples, let&rsquo;s assume we have a class called Creator and another called Game. A game belongs_to a creator, and a creator has_many games. We&rsquo;ll also say that a creator has_many players through games.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="c1"># models/game.rb</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">Game</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:player_games</span>
+</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:players</span><span class="p">,</span> <span class="ss">through</span><span class="p">:</span> <span class="ss">:player_games</span>
+</span><span class='line'>  <span class="n">belongs_to</span> <span class="ss">:creator</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># models/player.rb</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">Player</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:player_games</span>
+</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:games</span><span class="p">,</span> <span class="ss">through</span><span class="p">:</span> <span class="ss">:player_games</span>
+</span><span class='line'><span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1"># models/creator.rb</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">Creator</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:games</span>
+</span><span class='line'>  <span class="n">has_many</span> <span class="ss">:players</span><span class="p">,</span> <span class="ss">through</span><span class="p">:</span> <span class="ss">:games</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h1>reflect_on_all_associations</h1>
+
+<p>This method will return an array listing all of the associations that class has, and some information about those associations.</p>
+
+<p>Let&rsquo;s take a look at what we get when we call <code>reflect_on_all_associations</code> on our game class in the console:</p>
+
+<p><img src="http://i.imgur.com/sT2iZQz.png" alt="Looking at games associations" /></p>
+
+<p>It&rsquo;s long, and a bit hard to read. Luckily, <code>reflect_on_all_associations</code> lets us pass in a parameter to specify what macro, or type of associations, we want to look at. Let&rsquo;s try that again, this time looking only at what Games belongs to:</p>
+
+<p><img src="http://i.imgur.com/tszJUoc.png" alt="Looking at games has_many associations" /></p>
+
+<p>Better, but still not perfect. Now that we have this array, we can iterate over it to get even more useful information out of it.</p>
+
+<p>Let&rsquo;s look at all the classes that games has a has_many relationship with:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="no">Game</span><span class="o">.</span><span class="n">reflect_on_all_associations</span><span class="p">(</span><span class="ss">:has_many</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">{</span><span class="o">|</span><span class="n">relation</span><span class="o">|</span> <span class="n">relation</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This will output <code>players</code> and <code>player_games</code>.</p>
+
+<h1>reflect_on_association</h1>
+
+<p>We also have a tool to look more closely at a specific association.</p>
+
+<p><img src="http://i.imgur.com/lsnj853.png" alt="Looking at games creator association" /></p>
+
+<p>We can also see what kind of association the two models have.
+<img src="http://i.imgur.com/uO1OYPn.png" alt="Looking at games creator association type" /></p>
+
+<h1>reflections</h1>
+
+<p>Reflections, unlike the other two methods we&rsquo;ve looked at, returns a hash instead of an array. It looks pretty similar to the array we get while calling <code>reflect_on_all_associations</code> without a parameter, but includes the names of the associated tables as keys.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='Ruby'><span class='line'><span class="no">Player</span><span class="o">.</span><span class="n">reflections</span><span class="o">.</span><span class="n">keys</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The above will return [&ldquo;player_games&rdquo;, &ldquo;games&rdquo;], an array of all the table names that the Player model is associated with.</p>
+
+<h1>Why is this Useful?</h1>
+
+<p>If you&rsquo;re creating your own models and structuring the database yourself, you probably won&rsquo;t find yourself needing these methods very often. But if you&rsquo;re working with an unfamiliar database, and trying to get a better idea of how all the models fit together, reflecting on the associations can be a useful tool.</p>
+
+<p>Something I&rsquo;ve been wondering about, also, is whether there&rsquo;s a way to create forms more generically. Usually, we want a form that will render an input field for each of the model&rsquo;s attributes, with only a few variations.</p>
+
+<p>As I was looking through the <a href="http://api.rubyonrails.org/classes/ActiveRecord/Reflection/ClassMethods.html">docs for reflection</a>, I found this note about reflections:
+&ldquo;This information can, for example, be used in a form builder that takes an Active Record object and creates input fields for all of the attributes depending on their type and displays the associations to other objects.&rdquo;</p>
+
+<p>We could use reflection to create a generic form for a model, one that would adapt if we, say, added another relation to the model at a later date. The following code, for example, will create many input fields for associations that Game has a has_many relationship with, and a single input field for associations that Game has a belongs_to relationship with.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='HTML'><span class='line'><span class="nt">&lt;form&gt;</span>
+</span><span class='line'>  <span class="err">&lt;</span>% Game.reflect_on_all_associations.each do |association| %&gt;
+</span><span class='line'>    <span class="err">&lt;</span>% if association.macro == :belongs_to %&gt;
+</span><span class='line'>      <span class="nt">&lt;p&gt;</span><span class="err">&lt;</span>%= association.name %&gt;:<span class="nt">&lt;input</span> <span class="na">type =</span><span class="err"> </span><span class="s">&quot;text&quot;</span> <span class="na">name =</span><span class="err"> </span><span class="s">&quot;&lt;%=association.name%&gt;&quot;</span><span class="nt">&gt;&lt;/p&gt;</span>
+</span><span class='line'>    <span class="err">&lt;</span>% elsif association.macro == :has_many %&gt;
+</span><span class='line'>      <span class="err">&lt;</span>% 5.times do |i|%&gt;
+</span><span class='line'>        <span class="nt">&lt;p&gt;</span><span class="err">&lt;</span>%= association.name %&gt;:<span class="nt">&lt;input</span> <span class="na">type =</span><span class="err"> </span><span class="s">&quot;text&quot;</span> <span class="na">name =</span><span class="err"> </span><span class="s">&quot;&lt;%=association.name%&gt;&quot;</span><span class="nt">&gt;&lt;/p&gt;</span>
+</span><span class='line'>      <span class="err">&lt;</span>% end %&gt;
+</span><span class='line'>    <span class="err">&lt;</span>% end %&gt;
+</span><span class='line'>  <span class="err">&lt;</span>% end %&gt;
+</span><span class='line'><span class="nt">&lt;/form&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is a very simple (and not very useful) example of something that could be very powerful and adaptable.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -329,6 +480,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/03/01/collection-classes-in-active-record/">Reflecting on Active Record</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/02/16/evaluating-binding-in-erb/">Evaluating Binding in ERB</a>
