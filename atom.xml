@@ -4,7 +4,7 @@
   <title><![CDATA[Codename Berry]]></title>
   <link href="http://shirleylberry.github.io/atom.xml" rel="self"/>
   <link href="http://shirleylberry.github.io/"/>
-  <updated>2016-03-16T08:25:17-04:00</updated>
+  <updated>2016-03-16T08:47:51-04:00</updated>
   <id>http://shirleylberry.github.io/</id>
   <author>
     <name><![CDATA[Shirley Berry]]></name>
@@ -21,6 +21,8 @@
     <content type="html"><![CDATA[<p>When modeling domains, it&rsquo;s important to consider the hierarchy you want your classes and models to have. We want our domain to reflect the real world, while also hiding as much as possible, making sure our code is compartmentalized and easy to read, and accounting for any flexibility we might want our domain to have down the line.</p>
 
 <p>Before we can talk about ways of modeling our domain, though, we first need to talk about what makes it all work: polymorphism.</p>
+
+<p><img src="http://img14.deviantart.net/565e/i/2012/082/7/e/the_ditto_paradox___ditto_vs_ditto_by_lightmystic-d4teon6.gif" alt="A polymorphic pokemon" /></p>
 
 <h1>Polymorphism</h1>
 
