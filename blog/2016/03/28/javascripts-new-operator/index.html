@@ -86,7 +86,7 @@
 
 <div class="entry-content"><p>Javascript doesn&rsquo;t have inheritance in the sense we usually think of it, e.g. in Ruby, Java, Python, etc. There are no classes. Objects are just collections of attributes and methods that you can access by name. Instead, javascript uses something called <em>prototypical</em> <em>inheritance</em>. Every object in javascript has an internal property called prototype that is used for method lookup. We can take advantage of this prototype attribute to implement inheritance.</p>
 
-<p>Let&rsquo;s take a look at arrays for a simple example.</p>
+<p>Let&rsquo;s take a look at an array&rsquo;s prototype, and the Array constructor function&rsquo;s inheritance chain.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -109,7 +109,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Array is a constructor function, so it inherits from the Function object, as we can see when we call <code>__proto__</code>. Its prototype is an array literal, meaning that when we call <strong>proto</strong> on an instance of an array, it will gives us an array literal.</p>
+<p>An Array constructor function&rsquo;s prototype is an array literal, meaning that when we call <strong>proto</strong> on an instance of an array, it will gives us an array literal.</p>
 
 <p>We can also take a look at the Array constructor&rsquo;s inheritance path using <code>__proto__</code>.</p>
 
