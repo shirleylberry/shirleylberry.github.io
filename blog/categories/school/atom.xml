@@ -4,7 +4,7 @@
   <title><![CDATA[Category: School | Codename Berry]]></title>
   <link href="http://shirleylberry.github.io/blog/categories/school/atom.xml" rel="self"/>
   <link href="http://shirleylberry.github.io/"/>
-  <updated>2016-03-29T10:25:01-04:00</updated>
+  <updated>2016-03-29T10:28:11-04:00</updated>
   <id>http://shirleylberry.github.io/</id>
   <author>
     <name><![CDATA[Shirley Berry]]></name>
@@ -68,6 +68,8 @@ kitty.__proto__
 //    feedMe: function()
 //    __proto__: Object
 </code></pre>
+
+<p>Note that when you&rsquo;re looking at this code in the console, Object{} can sometimes refer to several different things, so it&rsquo;s important to expand it out and look at it. For example, sometimes it refers to Function objects (as in this case), and sometimes it refers to Object itself.</p>
 
 <p>We can see that kitty&rsquo;s <strong>proto</strong> attribute is now the same as its constructor&rsquo;s prototype.</p>
 
