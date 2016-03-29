@@ -4,7 +4,7 @@
   <title><![CDATA[Codename Berry]]></title>
   <link href="http://shirleylberry.github.io/atom.xml" rel="self"/>
   <link href="http://shirleylberry.github.io/"/>
-  <updated>2016-03-29T10:28:11-04:00</updated>
+  <updated>2016-03-29T10:47:53-04:00</updated>
   <id>http://shirleylberry.github.io/</id>
   <author>
     <name><![CDATA[Shirley Berry]]></name>
@@ -103,7 +103,7 @@
 
 <p>Note that when you&rsquo;re looking at this code in the console, Object{} can sometimes refer to several different things, so it&rsquo;s important to expand it out and look at it. For example, sometimes it refers to Function objects (as in this case), and sometimes it refers to Object itself.</p>
 
-<p>We can see that kitty&rsquo;s <strong>proto</strong> attribute is now the same as its constructor&rsquo;s prototype.</p>
+<p>We&rsquo;ve now created a new instance of a Cat. As you can see, kitty&rsquo;s <strong>proto</strong> attribute is now the same as its constructor&rsquo;s prototype.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -112,7 +112,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Now if we set attributes the Cat&rsquo;s prototype, kitty will also have access it because its <strong>proto</strong> attribute refers to Cat&rsquo;s prototype.</p>
+<p>Now if we set attributes on the Cat&rsquo;s prototype, kitty will also have access it because its <strong>proto</strong> attribute refers to Cat&rsquo;s prototype.</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -123,9 +123,11 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
+<p>Besides setting the prototype, the new keyword also changes this from the global this, to the new instance it created. If we call <code>Cat()</code> without the new keyword, this will be the window object inside the constructor.</p>
+
 <p>So, the new keyword does several things. It:
   1. tells the function to create a new instance of object and set the variable <code>this</code> equal to the new instance
-  2. sets that new instance&rsquo;s <strong>proto</strong> attribute to the function&rsquo;s prototype attribute. Now, if we call a method on that instance that we haven&rsquo;t defined directly on the object, it will look up the chain of inheritance, all the way up to Object
+  2. sets that new instance&rsquo;s <strong>proto</strong> attribute to the constructor function&rsquo;s prototype attribute. Now, if we call a method on that instance that we haven&rsquo;t defined directly on the object, it will look up the chain of inheritance, all the way up to Object
   3. returns the new object</p>
 
 <p>A very very simple function that does something similar (without accounting for parameters) might look something like the following:</p>
