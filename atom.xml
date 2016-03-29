@@ -4,7 +4,7 @@
   <title><![CDATA[Codename Berry]]></title>
   <link href="http://shirleylberry.github.io/atom.xml" rel="self"/>
   <link href="http://shirleylberry.github.io/"/>
-  <updated>2016-03-29T10:10:06-04:00</updated>
+  <updated>2016-03-29T10:20:52-04:00</updated>
   <id>http://shirleylberry.github.io/</id>
   <author>
     <name><![CDATA[Shirley Berry]]></name>
@@ -158,7 +158,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p><code>Object.create</code> creates a new object that inherits directly from the specified prototype.</p>
+<p><code>Object.create</code> creates a new object that inherits directly from the specified prototype. It differs from the new keyword in that you can pass in arguments as its second argument.</p>
 
 <p>Creating new instances of Kitten will now inherit from Cat.</p>
 
@@ -183,7 +183,13 @@
 
 <p>Fun side note: javascript now has a <code>class</code> keyword that provides syntactic sugar over javascript&rsquo;s prototypical inheritance. The class keyword is just a &ldquo;special function&rdquo; that does essentially the same thing as calling new on a function that returns an object. It does let you use the <code>extend</code> keyword to implement a more familiar version of inheritance. It isn&rsquo;t supported in IE or Opera. You can check it out <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes">here</a>.</p>
 
-<p>Further Reading:</p>
+<p>Further Reading:
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function">Javascript Function docs</a>
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/prototype">Function.prototype</a>
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/prototype">Object.prototype</a>
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create">Object.create</a>
+<a href="http://stackoverflow.com/questions/572897/how-does-javascript-prototype-work?rq=1">Stackexchange: How does the javascript .prototype work?</a>
+<a href="http://stackoverflow.com/questions/1646698/what-is-the-new-keyword-in-javascript?lq=1">What is the new keyword in javascript?</a></p>
 ]]></content>
   </entry>
   
