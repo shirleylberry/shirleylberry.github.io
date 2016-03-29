@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Flatiron | Codename Berry]]></title>
   <link href="http://shirleylberry.github.io/blog/categories/flatiron/atom.xml" rel="self"/>
   <link href="http://shirleylberry.github.io/"/>
-  <updated>2016-03-16T08:47:51-04:00</updated>
+  <updated>2016-03-29T00:51:11-04:00</updated>
   <id>http://shirleylberry.github.io/</id>
   <author>
     <name><![CDATA[Shirley Berry]]></name>
@@ -12,6 +12,307 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Javascript's New Operator]]></title>
+    <link href="http://shirleylberry.github.io/blog/2016/03/28/javascripts-new-operator/"/>
+    <updated>2016-03-28T20:36:47-04:00</updated>
+    <id>http://shirleylberry.github.io/blog/2016/03/28/javascripts-new-operator</id>
+    <content type="html"><![CDATA[<p>Javascript doesn&rsquo;t have inheritance in the sense we usually think of it, e.g. in Ruby, Java, Python, etc. There are no classes. Objects are just collections of attributes and methods that you can access by name. Instead, javascript uses something called <em>prototypical</em> <em>inheritance</em>. Every object in javascript has an internal property called prototype that is used for method lookup. We can take advantage of this prototype attribute to implement inheritance.</p>
+
+<p>Let&rsquo;s take a look at arrays for a simple example.</p>
+
+<pre><code class="Javascript">Array
+// =&gt; function Array() { [native code] }
+Array.prototype
+// =&gt; []
+
+a = new Array('java', 'script')
+// ^ is the same as: a = ['java', 'script']
+a.__proto__
+// =&gt; []
+</code></pre>
+
+<p>Array is a constructor function, so it inherits from the Function object, as we can see when we call <code>__proto__</code>. Its prototype is an array literal, meaning that when we call <strong>proto</strong> on an instance of an array, it will gives us an array literal.</p>
+
+<p>We can also take a look at the Array constructor&rsquo;s inheritance path using <code>__proto__</code>.</p>
+
+<pre><code>Array.__proto__
+// =&gt; function() {}
+Array.__proto__.__proto__
+// =&gt; Object {}
+Array.__proto__.__proto__.__proto__
+// =&gt; null
+</code></pre>
+
+<p>Array is a constructor, which means that it inherits from Function. Then, Function objects inherit from Object. Calling <code>__proto__</code> on Object returns null since the inheritance chain stops with Object.</p>
+
+<p>When javascript looks for attributes (including methods) on an instance, it uses the <code>__proto__</code> attribute to look up the chain of inheritance. When an instance is created, the <code>prototype</code> attribute of the constructor function is what is used to set the <code>__proto__</code> attribute of the new instance.</p>
+
+<h1>Using Inheritance</h1>
+
+<p>Let&rsquo;s say we have a function Cat.</p>
+
+<pre><code class="Javascript">var Cat = function(name, age){
+  this.name = name
+  this.age = age
+  return "Meow!"
+}
+
+kitty = new Cat("Emilia", 7)
+
+kitty.prototype
+// =&gt; undefined
+kitty.__proto__
+// =&gt; Object {}
+</code></pre>
+
+<p>The new keyword does several things. It:
+  1. tells the function to create a new instance of object and set the variable <code>this</code> equal to the new instance
+  2. sets that new instance&rsquo;s <strong>proto</strong> attribute to the function&rsquo;s prototype attribute. Now, if we call a method on that instance that we haven&rsquo;t defined directly on the object, it will look up the chain of inheritance, all the way up to Object
+  3. returns the new object</p>
+
+<p>A very very simple function that does something similar (without accounting for parameters) might look something like the following:
+<code>Javascript
+function new(constructor){
+  var this = {}; // step 1
+  this.__proto__ = constructor.prototype; // step 2
+  return this; // step 3
+}
+</code></p>
+
+<p>If we take our example from before, we can see that kitty&rsquo;s <strong>proto</strong> attribute is now the same as its constructor&rsquo;s prototype.</p>
+
+<pre><code class="Javascript">kitty.__proto__ === Cat.prototype
+// =&gt; true
+</code></pre>
+
+<p>Now, if we set attributes the Cat&rsquo;s prototype, kitty will also have access it because its <strong>proto</strong> attribute refers to Cat&rsquo;s prototype.</p>
+
+<pre><code class="Javascript">Cat.prototype.feedMe = function(){console.log("Feed me human.")}
+kitty.feedMe()
+// =&gt; Feed me human.
+</code></pre>
+
+<p>There&rsquo;s a great deal more that happens in <code>new</code> that comes from Function.prototype that I might get into in a future blog post. For now, it&rsquo;s simple helpful to know how the new keyword and prototype attribute work internally.</p>
+
+<p>Fun side note: javascript now has a <code>class</code> keyword that provides syntactic sugar over javascript&rsquo;s prototypical inheritance. The class keyword is just a &ldquo;special function&rdquo; that does essentially the same thing as calling new on a function that returns an object. It does let you use the <code>extend</code> keyword to implement a more familiar version of inheritance. It isn&rsquo;t supported in IE or Opera. You can check it out <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes">here</a>.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Inheritance and Composition]]></title>
+    <link href="http://shirleylberry.github.io/blog/2016/03/15/inheritance-and-composition/"/>
+    <updated>2016-03-15T21:39:17-04:00</updated>
+    <id>http://shirleylberry.github.io/blog/2016/03/15/inheritance-and-composition</id>
+    <content type="html"><![CDATA[<p>When modeling domains, it&rsquo;s important to consider the hierarchy you want your classes and models to have. We want our domain to reflect the real world, while also hiding as much as possible, making sure our code is compartmentalized and easy to read, and accounting for any flexibility we might want our domain to have down the line.</p>
+
+<p>Before we can talk about ways of modeling our domain, though, we first need to talk about what makes it all work: polymorphism.</p>
+
+<p><img src="http://img14.deviantart.net/565e/i/2012/082/7/e/the_ditto_paradox___ditto_vs_ditto_by_lightmystic-d4teon6.gif" alt="A polymorphic pokemon" /></p>
+
+<h1>Polymorphism</h1>
+
+<p>&ldquo;In object-oriented programming, polymorphism refers to a programming language&rsquo;s ability to process objects differently depending on their data type or class. More specifically, it is the ability to redefine methods for derived classes.&rdquo; -<a href="http://www.webopedia.com/TERM/P/polymorphism.html">Webopedia</a>.</p>
+
+<p>From the Greek words πολύς (many) and μορφή (shape, form) (majoring in Greek: worth it), polymorphism describes the ability to use the same interface to interact with objects of different types. In others words, calling the same methods on objects of different types, and getting different results.</p>
+
+<p>Polymorphism is central to Ruby, since everything in Ruby is an object (more or less). Even classes are instances of class Class. When you call <code>.class</code> on something, you expect a different result depending on the object&rsquo;s type.</p>
+
+<p>Inheritance, modules, and composition are all ways to implement polymorphism.</p>
+
+<h1>Inheritance</h1>
+
+<p>Inheritance feels like the simplest way to implement polymorphism, but actually introduces a great deal of unexpected complexity later down the line. Let&rsquo;s look at a really simple example. We have two kinds of computers that inherit from a parent class Computer: Desktop and Laptop. Creating subclasses lets us add some custom information to each kind of computer. In our case, we&rsquo;ll pretend that Intel creates all desktops on earth, and apple creates all laptops.</p>
+
+<pre><code class="Ruby">class Computer &lt; ActiveRecord::Base
+  def manufacturer
+    "Subclass must implement."
+  end
+end
+
+class Desktop &lt; Computer
+  attr_accessor :monitor_type
+
+  def manufacturer
+    "Intel"
+  end
+end
+
+class Laptop &lt; Computer
+  def manufacturer
+    "Apple"
+  end
+end
+</code></pre>
+
+<p>Now, if we call .manufacturer on an instance of a Computer, Desktop, or Laptop, it will return a different value, because each of those instances will be a different type.</p>
+
+<p>Because Ruby only allows single inheritance, it&rsquo;s important to set up inheritance relationships thoughfully and logically. By saying that one class inherits from another, you&rsquo;re stating that the child is and always will be a type of the parent.</p>
+
+<p>&ldquo;If you’re using inheritance, give priority to creating a sensible superclass/subclass relationship. Don’t use up a class’s one and only superclass relationship to endow the class with what might turn out to be just one of several sets of characteristics.&rdquo; The well grounded Rubyist, page 112.</p>
+
+<p>Inheritance, then, shouldn&rsquo;t simply be used to add code that you&rsquo;d like that class to have access to. Inheritance is for adding methods and attributes that are essential and fundamental to the way that class will be treated in your domain.</p>
+
+<p>Use inheritance when you have pieces of code that are clearly related, logically fit together, and are reusable. For example, if you have a website with different types of users, but each type will share some attributes and functionality, like having a name, email, and password or if you&rsquo;re trying to implement functionality that requires inheritance (as Active Record does, for example). Even then, you&rsquo;ll often find that you want to implement the functionality with a mixin instead.</p>
+
+<p>It&rsquo;s also very difficult to decide later that you want your object to inherit from something else. It&rsquo;s much simpler to decide that you want your object to be composed of different parts later down the line.</p>
+
+<h1>Composition</h1>
+
+<p>Composition refers to a way of achieving polymorphism by including references to other classes in your own class. We can imagine that we might want our computer to have some functionality like displaying text, or processing a command. We don&rsquo;t necessarily want every single computer to have that ability, though. A server, for example, won&rsquo;t need to display text. In addition, it isn&rsquo;t really the responsibility of a computer to display text - it&rsquo;s the monitor&rsquo;s. The monitor will decide everything from the color, aspect ratio, and brightness.</p>
+
+<p>If we tried to put this functionality in the computer class itself, we would probably find ourselves using a lot of if statements to make decisions about what our methods should return, based on something like a monitor_type attribute.</p>
+
+<pre><code class="Ruby">class Computer &lt; ActiveRecord::Base
+  def manufacturer
+    "Subclass must implement."
+  end
+end
+
+class Desktop &lt; Computer
+  attr_accessor :monitor_type
+
+  def manufacturer
+    "Intel"
+  end
+
+  def monitor=
+    @monitor = Monitor.new(aspect_ratio: "16:10", brightness: 10)
+  end
+
+  def monitor
+    @monitor
+  end
+end
+
+class Monitor &lt; ActiveRecord::Base
+end
+</code></pre>
+
+<p>Now we can much more easily customize our comptuer and access information about its components.</p>
+
+<p>If, for example, we wanted to buy a new monitor for our computer, we could simply change the instance of Monitor that our model refers to, very similar to physically switching out a monitor in real life.</p>
+
+<p>One trade off is that our method calls end up being a bit more verbose. For example, instead of being able to call my_computer.aspect_ratio, we would call my_computer.monitor.aspect_ratio. Our method calls, however, are also much clearer and easier to read. It&rsquo;s clear that this method is asking for the aspect ratio of my_computer&rsquo;s monitor.</p>
+
+<p>Both composition and inheritance have their place as we model our domains, but it&rsquo;s important to consider the downsides and upsides of inheritance before implementing it.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Reflecting on Active Record]]></title>
+    <link href="http://shirleylberry.github.io/blog/2016/03/01/collection-classes-in-active-record/"/>
+    <updated>2016-03-01T22:57:42-05:00</updated>
+    <id>http://shirleylberry.github.io/blog/2016/03/01/collection-classes-in-active-record</id>
+    <content type="html"><![CDATA[<p><img src="http://i.giphy.com/wfETXXGtH2lDW.gif" alt="Reflection" /></p>
+
+<p>Reflection lets us look at our objects, and get more information about how they relate to other objects. We&rsquo;ll be looking at three methods that let us access these reflection objects in this blog post: <code>reflect_on_all_associations</code>, <code>reflect_on_association</code>, and <code>reflections</code>.</p>
+
+<p>When Active Record creates a new association via the :belongs_to or :has_many keywords, it also creates a Reflection object, in our examples a BelongsToReflection or HasManyReflection, that delegates methods based on the association type.</p>
+
+<p>This ability to inspect our relationships can be useful if you&rsquo;re just in your code and want to explore more about your models relationships, or if you&rsquo;re building, say, a form for a model and want to add fields for every class that the model has a belongs-to relationship with.</p>
+
+<p>For our examples, let&rsquo;s assume we have a Creator class, a Player class, a Game class, and a PlayerGames class to join our games and players tables. A game belongs_to a creator, and a creator has_many games. We&rsquo;ll also say that a creator has_many players through games.</p>
+
+<pre><code class="Ruby"># models/game.rb
+class Game &lt; ActiveRecord::Base
+  has_many :player_games
+  has_many :players, through: :player_games
+  belongs_to :creator
+end
+
+# models/player.rb
+class Player &lt; ActiveRecord::Base
+  has_many :player_games
+  has_many :games, through: :player_games
+end
+
+# models/creator.rb
+class Creator &lt; ActiveRecord::Base
+  has_many :games
+  has_many :players, through: :games
+end
+
+# models/player_games.rb
+class PlayerGames &lt; ActiveRecord::Base
+  belongs_to :game
+  belongs_to :player
+end
+</code></pre>
+
+<h1>reflect_on_all_associations</h1>
+
+<p>This method will return an array listing all of the associations that class has, and some information about those associations.</p>
+
+<p>Let&rsquo;s take a look at what we get when we call <code>reflect_on_all_associations</code> on our game class in the console:</p>
+
+<p><img src="http://i.imgur.com/sT2iZQz.png" alt="Looking at games associations" /></p>
+
+<p>It&rsquo;s long, and a bit hard to read. Luckily, <code>reflect_on_all_associations</code> lets us pass in a parameter to specify what macro, or type of associations, we want to look at. Let&rsquo;s try that again, this time looking only at what Games has_many of:</p>
+
+<p><img src="http://i.imgur.com/tszJUoc.png" alt="Looking at games has_many associations" /></p>
+
+<p>Better, but still not perfect. Now that we have this array, we can iterate over it to get even more useful information out of it.</p>
+
+<p>Let&rsquo;s look at all the classes that games has a has_many relationship with:</p>
+
+<pre><code class="Ruby">Game.reflect_on_all_associations(:has_many).map{|relation| relation.klass}
+</code></pre>
+
+<p>This will output</p>
+
+<p><img src="http://i.imgur.com/amA05kK.png" alt="Games has_many classes" /></p>
+
+<h1>reflect_on_association</h1>
+
+<p>We also have a tool to look more closely at a specific association.</p>
+
+<p><img src="http://i.imgur.com/lsnj853.png" alt="Looking at games creator association" /></p>
+
+<p>We can also see what kind of association the two models have.
+<img src="http://i.imgur.com/uO1OYPn.png" alt="Looking at games creator association type" /></p>
+
+<h1>reflections</h1>
+
+<p>Reflections, unlike the other two methods we&rsquo;ve looked at, returns a hash instead of an array. It looks pretty similar to the array we get while calling <code>reflect_on_all_associations</code> without a parameter, but includes the names of the associated tables as keys.</p>
+
+<pre><code class="Ruby">Player.reflections.keys
+</code></pre>
+
+<p>The above will return [&ldquo;player_games&rdquo;, &ldquo;games&rdquo;], an array of all the table names that the Player model is associated with. Because <code>reflections</code> also returns aggreations, we won&rsquo;t often use this as often as <code>reflect_on_all_associations</code>, which returns a more specific grouping of relationships.</p>
+
+<h1>Why is this Useful?</h1>
+
+<p>If you&rsquo;re creating your own models and structuring the database yourself, you probably won&rsquo;t find yourself needing these methods very often. But if you&rsquo;re working with an unfamiliar database, and trying to get a better idea of how all the models fit together, reflecting on the associations can be a useful tool.</p>
+
+<p>The <code>.klass</code> attribute of the Reflection objects also allows us to access the class of the target object of the association, which means we have access to those class methods, as well as the ability to create new instances of that class, and associate them with the object we&rsquo;re working with.</p>
+
+<p>Something I&rsquo;ve been consider is whether there&rsquo;s a way to create forms more generically. Usually, we want a form that will render an input field for each of the model&rsquo;s attributes, adding some customization depending on what kind of attribute it is.</p>
+
+<p>As I was looking through the <a href="http://api.rubyonrails.org/classes/ActiveRecord/Reflection/ClassMethods.html">docs for reflection</a>, I found this note about reflections:
+&ldquo;This information can, for example, be used in a form builder that takes an Active Record object and creates input fields for all of the attributes depending on their type and displays the associations to other objects.&rdquo;</p>
+
+<p>We could use reflection to create a generic form for a model, one that would adapt if we, say, added another relation to the model at a later date. The following code, for example, will create many input fields for associations that Game has a has_many relationship with, and a single input field for associations that Game has a belongs_to relationship with.</p>
+
+<pre><code class="HTML">&lt;form&gt;
+  &lt;% Game.reflect_on_all_associations.each do |association| %&gt;
+    &lt;% if association.macro == :belongs_to %&gt;
+      &lt;p&gt;&lt;%= association.name %&gt;:&lt;input type = "text" name = "&lt;%=association.name%&gt;"&gt;&lt;/p&gt;
+    &lt;% elsif association.macro == :has_many %&gt;
+      &lt;% association.klass.all.each do |instance| %&gt;
+        &lt;p&gt;&lt;%= instance.class %&gt;:&lt;input type = "checkbox" name = "&lt;%=instance%&gt;"&gt;&lt;/p&gt;
+      &lt;% end %&gt;
+    &lt;% end %&gt;
+  &lt;% end %&gt;
+&lt;/form&gt;
+</code></pre>
+
+<p>This is a very simple (and not very useful) example of something that could be very powerful and adaptable.</p>
+
+<p>Another use case I saw online was for auto-generating seed files. Once you know what associations an object has, the attributes that associated object has, and the class methods of the associated object, it&rsquo;s easy to generate a series of loops that will simply generate these objects and link them up for you.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Evaluating Binding in ERB]]></title>
