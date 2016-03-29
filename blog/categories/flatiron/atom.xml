@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Flatiron | Codename Berry]]></title>
   <link href="http://shirleylberry.github.io/blog/categories/flatiron/atom.xml" rel="self"/>
   <link href="http://shirleylberry.github.io/"/>
-  <updated>2016-03-29T00:51:11-04:00</updated>
+  <updated>2016-03-29T10:10:06-04:00</updated>
   <id>http://shirleylberry.github.io/</id>
   <author>
     <name><![CDATA[Shirley Berry]]></name>
@@ -45,7 +45,7 @@ Array.__proto__.__proto__.__proto__
 // =&gt; null
 </code></pre>
 
-<p>Array is a constructor, which means that it inherits from Function. Then, Function objects inherit from Object. Calling <code>__proto__</code> on Object returns null since the inheritance chain stops with Object.</p>
+<p>Array is a constructor, which means that it inherits from the Function prototype. Then, Function objects inherit from the Object prototype. Calling <code>__proto__</code> on Object returns null since the inheritance chain stops with Object.</p>
 
 <p>When javascript looks for attributes (including methods) on an instance, it uses the <code>__proto__</code> attribute to look up the chain of inheritance. When an instance is created, the <code>prototype</code> attribute of the constructor function is what is used to set the <code>__proto__</code> attribute of the new instance.</p>
 
@@ -56,7 +56,6 @@ Array.__proto__.__proto__.__proto__
 <pre><code class="Javascript">var Cat = function(name, age){
   this.name = name
   this.age = age
-  return "Meow!"
 }
 
 kitty = new Cat("Emilia", 7)
@@ -64,10 +63,26 @@ kitty = new Cat("Emilia", 7)
 kitty.prototype
 // =&gt; undefined
 kitty.__proto__
-// =&gt; Object {}
+// Object {}
+//    constructor: function(name, age) // its constructor is the Cat function
+//    feedMe: function()
+//    __proto__: Object
 </code></pre>
 
-<p>The new keyword does several things. It:
+<p>We can see that kitty&rsquo;s <strong>proto</strong> attribute is now the same as its constructor&rsquo;s prototype.</p>
+
+<pre><code class="Javascript">kitty.__proto__ === Cat.prototype
+// =&gt; true
+</code></pre>
+
+<p>Now if we set attributes the Cat&rsquo;s prototype, kitty will also have access it because its <strong>proto</strong> attribute refers to Cat&rsquo;s prototype.</p>
+
+<pre><code class="Javascript">Cat.prototype.feedMe = function(){console.log("Feed me human.")}
+kitty.feedMe()
+// =&gt; Feed me human.
+</code></pre>
+
+<p>So, the new keyword does several things. It:
   1. tells the function to create a new instance of object and set the variable <code>this</code> equal to the new instance
   2. sets that new instance&rsquo;s <strong>proto</strong> attribute to the function&rsquo;s prototype attribute. Now, if we call a method on that instance that we haven&rsquo;t defined directly on the object, it will look up the chain of inheritance, all the way up to Object
   3. returns the new object</p>
@@ -81,22 +96,34 @@ function new(constructor){
 }
 </code></p>
 
-<p>If we take our example from before, we can see that kitty&rsquo;s <strong>proto</strong> attribute is now the same as its constructor&rsquo;s prototype.</p>
+<p>If we want to create a new constructor that inherits from Cat, we can do the following:
+<code>Javascript
+var Kitten = function(){
+  this.age = 1
+}
+Kitten.prototype = Object.create(Cat.prototype)
+Kitten.prototype
+// =&gt; Cat {}
+</code></p>
 
-<pre><code class="Javascript">kitty.__proto__ === Cat.prototype
-// =&gt; true
-</code></pre>
+<p><code>Object.create</code> creates a new object that inherits directly from the specified prototype.</p>
 
-<p>Now, if we set attributes the Cat&rsquo;s prototype, kitty will also have access it because its <strong>proto</strong> attribute refers to Cat&rsquo;s prototype.</p>
+<p>Creating new instances of Kitten will now inherit from Cat.</p>
 
-<pre><code class="Javascript">Cat.prototype.feedMe = function(){console.log("Feed me human.")}
-kitty.feedMe()
+<pre><code class="Javascript">var bea = new Kitten()
+bea
+// =&gt; Kitten {age: 1}
+//      age: 1
+//      __proto__: Cat
+bea.feedMe()
 // =&gt; Feed me human.
 </code></pre>
 
-<p>There&rsquo;s a great deal more that happens in <code>new</code> that comes from Function.prototype that I might get into in a future blog post. For now, it&rsquo;s simple helpful to know how the new keyword and prototype attribute work internally.</p>
+<p>There&rsquo;s a great deal more that happens in <code>new</code> that comes from Function.prototype that I might get into in a future blog post. For now, it&rsquo;s important to understand how the new operator sets up inheritance for us internally.</p>
 
 <p>Fun side note: javascript now has a <code>class</code> keyword that provides syntactic sugar over javascript&rsquo;s prototypical inheritance. The class keyword is just a &ldquo;special function&rdquo; that does essentially the same thing as calling new on a function that returns an object. It does let you use the <code>extend</code> keyword to implement a more familiar version of inheritance. It isn&rsquo;t supported in IE or Opera. You can check it out <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes">here</a>.</p>
+
+<p>Further Reading:</p>
 ]]></content>
   </entry>
   

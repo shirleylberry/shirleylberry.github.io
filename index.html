@@ -131,7 +131,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Array is a constructor, which means that it inherits from Function. Then, Function objects inherit from Object. Calling <code>__proto__</code> on Object returns null since the inheritance chain stops with Object.</p>
+<p>Array is a constructor, which means that it inherits from the Function prototype. Then, Function objects inherit from the Object prototype. Calling <code>__proto__</code> on Object returns null since the inheritance chain stops with Object.</p>
 
 <p>When javascript looks for attributes (including methods) on an instance, it uses the <code>__proto__</code> attribute to look up the chain of inheritance. When an instance is created, the <code>prototype</code> attribute of the constructor function is what is used to set the <code>__proto__</code> attribute of the new instance.</p>
 
@@ -151,10 +151,11 @@
 <span class='line-number'>10</span>
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
 </pre></td><td class='code'><pre><code class='Javascript'><span class='line'><span class="kd">var</span> <span class="nx">Cat</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">age</span><span class="p">){</span>
 </span><span class='line'>  <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
 </span><span class='line'>  <span class="k">this</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="nx">age</span>
-</span><span class='line'>  <span class="k">return</span> <span class="s2">&quot;Meow!&quot;</span>
 </span><span class='line'><span class="p">}</span>
 </span><span class='line'>
 </span><span class='line'><span class="nx">kitty</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Cat</span><span class="p">(</span><span class="s2">&quot;Emilia&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
@@ -162,11 +163,34 @@
 </span><span class='line'><span class="nx">kitty</span><span class="p">.</span><span class="nx">prototype</span>
 </span><span class='line'><span class="c1">// =&gt; undefined</span>
 </span><span class='line'><span class="nx">kitty</span><span class="p">.</span><span class="nx">__proto__</span>
-</span><span class='line'><span class="c1">// =&gt; Object {}</span>
+</span><span class='line'><span class="c1">// Object {}</span>
+</span><span class='line'><span class="c1">//    constructor: function(name, age) // its constructor is the Cat function</span>
+</span><span class='line'><span class="c1">//    feedMe: function()</span>
+</span><span class='line'><span class="c1">//    __proto__: Object</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>The new keyword does several things. It:
+<p>We can see that kitty&rsquo;s <strong>proto</strong> attribute is now the same as its constructor&rsquo;s prototype.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='Javascript'><span class='line'><span class="nx">kitty</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">===</span> <span class="nx">Cat</span><span class="p">.</span><span class="nx">prototype</span>
+</span><span class='line'><span class="c1">// =&gt; true</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now if we set attributes the Cat&rsquo;s prototype, kitty will also have access it because its <strong>proto</strong> attribute refers to Cat&rsquo;s prototype.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='Javascript'><span class='line'><span class="nx">Cat</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">feedMe</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Feed me human.&quot;</span><span class="p">)}</span>
+</span><span class='line'><span class="nx">kitty</span><span class="p">.</span><span class="nx">feedMe</span><span class="p">()</span>
+</span><span class='line'><span class="c1">// =&gt; Feed me human.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So, the new keyword does several things. It:
   1. tells the function to create a new instance of object and set the variable <code>this</code> equal to the new instance
   2. sets that new instance&rsquo;s <strong>proto</strong> attribute to the function&rsquo;s prototype attribute. Now, if we call a method on that instance that we haven&rsquo;t defined directly on the object, it will look up the chain of inheritance, all the way up to Object
   3. returns the new object</p>
@@ -186,29 +210,49 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>If we take our example from before, we can see that kitty&rsquo;s <strong>proto</strong> attribute is now the same as its constructor&rsquo;s prototype.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='Javascript'><span class='line'><span class="nx">kitty</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">===</span> <span class="nx">Cat</span><span class="p">.</span><span class="nx">prototype</span>
-</span><span class='line'><span class="c1">// =&gt; true</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now, if we set attributes the Cat&rsquo;s prototype, kitty will also have access it because its <strong>proto</strong> attribute refers to Cat&rsquo;s prototype.</p>
+<p>If we want to create a new constructor that inherits from Cat, we can do the following:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='Javascript'><span class='line'><span class="nx">Cat</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">feedMe</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;Feed me human.&quot;</span><span class="p">)}</span>
-</span><span class='line'><span class="nx">kitty</span><span class="p">.</span><span class="nx">feedMe</span><span class="p">()</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='Javascript'><span class='line'><span class="kd">var</span> <span class="nx">Kitten</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+</span><span class='line'>  <span class="k">this</span><span class="p">.</span><span class="nx">age</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="nx">Kitten</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">Cat</span><span class="p">.</span><span class="nx">prototype</span><span class="p">)</span>
+</span><span class='line'><span class="nx">Kitten</span><span class="p">.</span><span class="nx">prototype</span>
+</span><span class='line'><span class="c1">// =&gt; Cat {}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>Object.create</code> creates a new object that inherits directly from the specified prototype.</p>
+
+<p>Creating new instances of Kitten will now inherit from Cat.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='Javascript'><span class='line'><span class="kd">var</span> <span class="nx">bea</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Kitten</span><span class="p">()</span>
+</span><span class='line'><span class="nx">bea</span>
+</span><span class='line'><span class="c1">// =&gt; Kitten {age: 1}</span>
+</span><span class='line'><span class="c1">//      age: 1</span>
+</span><span class='line'><span class="c1">//      __proto__: Cat</span>
+</span><span class='line'><span class="nx">bea</span><span class="p">.</span><span class="nx">feedMe</span><span class="p">()</span>
 </span><span class='line'><span class="c1">// =&gt; Feed me human.</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>There&rsquo;s a great deal more that happens in <code>new</code> that comes from Function.prototype that I might get into in a future blog post. For now, it&rsquo;s simple helpful to know how the new keyword and prototype attribute work internally.</p>
+<p>There&rsquo;s a great deal more that happens in <code>new</code> that comes from Function.prototype that I might get into in a future blog post. For now, it&rsquo;s important to understand how the new operator sets up inheritance for us internally.</p>
 
 <p>Fun side note: javascript now has a <code>class</code> keyword that provides syntactic sugar over javascript&rsquo;s prototypical inheritance. The class keyword is just a &ldquo;special function&rdquo; that does essentially the same thing as calling new on a function that returns an object. It does let you use the <code>extend</code> keyword to implement a more familiar version of inheritance. It isn&rsquo;t supported in IE or Opera. You can check it out <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes">here</a>.</p>
+
+<p>Further Reading:</p>
 </div>
   
   
