@@ -206,11 +206,19 @@
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
 </pre></td><td class='code'><pre><code class='Javascript'><span class='line'><span class="kd">function</span> <span class="k">new</span><span class="p">(</span><span class="nx">constructor</span><span class="p">){</span>
 </span><span class='line'>  <span class="kd">var</span> <span class="k">this</span> <span class="o">=</span> <span class="p">{};</span> <span class="c1">// step 1</span>
 </span><span class='line'>  <span class="k">this</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">=</span> <span class="nx">constructor</span><span class="p">.</span><span class="nx">prototype</span><span class="p">;</span> <span class="c1">// step 2</span>
 </span><span class='line'>  <span class="k">return</span> <span class="k">this</span><span class="p">;</span> <span class="c1">// step 3</span>
 </span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nx">bea</span> <span class="o">=</span> <span class="k">new</span><span class="p">(</span><span class="nx">Kitten</span><span class="p">)</span>
+</span><span class='line'><span class="nx">bea</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">===</span> <span class="nx">Kitten</span><span class="p">.</span><span class="nx">prototype</span>
+</span><span class='line'><span class="c1">// =&gt; true</span>
 </span></code></pre></td></tr></table></div></figure>
 
 

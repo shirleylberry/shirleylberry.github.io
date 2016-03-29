@@ -4,7 +4,7 @@
   <title><![CDATA[Category: School | Codename Berry]]></title>
   <link href="http://shirleylberry.github.io/blog/categories/school/atom.xml" rel="self"/>
   <link href="http://shirleylberry.github.io/"/>
-  <updated>2016-03-29T10:47:53-04:00</updated>
+  <updated>2016-03-29T11:02:10-04:00</updated>
   <id>http://shirleylberry.github.io/</id>
   <author>
     <name><![CDATA[Shirley Berry]]></name>
@@ -92,13 +92,25 @@ kitty.feedMe()
   3. returns the new object</p>
 
 <p>A very very simple function that does something similar (without accounting for parameters) might look something like the following:
-<code>Javascript
-function new(constructor){
-  var this = {}; // step 1
-  this.__proto__ = constructor.prototype; // step 2
-  return this; // step 3
-}
-</code></p>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='Javascript'><span class='line'><span class="kd">function</span> <span class="k">new</span><span class="p">(</span><span class="nx">constructor</span><span class="p">){</span>
+</span><span class='line'>  <span class="kd">var</span> <span class="k">this</span> <span class="o">=</span> <span class="p">{};</span> <span class="c1">// step 1</span>
+</span><span class='line'>  <span class="k">this</span><span class="p">.</span><span class="o">&lt;</span><span class="nx">strong</span><span class="o">&gt;</span><span class="nx">proto</span><span class="o">&lt;</span><span class="sr">/strong&gt; = constructor.prototype; /</span><span class="o">/</span> <span class="nx">step</span> <span class="mi">2</span>
+</span><span class='line'>  <span class="k">return</span> <span class="k">this</span><span class="p">;</span> <span class="c1">// step 3</span>
+</span><span class='line'><span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">bea</span> <span class="o">=</span> <span class="k">new</span><span class="p">(</span><span class="nx">Kitten</span><span class="p">)</span>
+</span><span class='line'><span class="nx">bea</span><span class="p">.</span><span class="o">&lt;</span><span class="nx">strong</span><span class="o">&gt;</span><span class="nx">proto</span><span class="o">&lt;</span><span class="err">/strong&gt; === Kitten.prototype</span>
+</span><span class='line'><span class="c1">// =&gt; true</span>
+</span></code></pre></td></tr></table></div></figure></p>
 
 <p>If we want to create a new constructor that inherits from Cat, we can do the following:
 <code>Javascript
